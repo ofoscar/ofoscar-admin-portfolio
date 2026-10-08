@@ -1,4 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ProjectsService } from '../../core/services/projects';
 import { Project } from './project.model';
 
 @Component({
@@ -7,50 +8,14 @@ import { Project } from './project.model';
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })
-export class Projects {
+export class Projects implements OnInit {
+  private projectsService = inject(ProjectsService);
+
+  projects = signal<Project[]>([]);
   search = signal('');
 
-  projects = signal<Project[]>([
-    {
-      id: 1,
-      title: 'Portfolio Website',
-      hook: 'Portfolio Website',
-      description: 'Personal portfolio built with Next.js',
-      github_url: 'https://github.com/ofoscar',
-      demo_url: 'https://ofoscar.com',
-      cover_image_url: null,
-      published: true,
-      tags: ['Next.js', 'TypeScript'],
-      highlights: ['Next.js', 'TypeScript'],
-      images: null,
-    },
-    {
-      id: 2,
-      title: 'SiPerros',
-      hook: 'Portfolio Website',
-      description: 'Pet-friendly website',
-      github_url: 'https://github.com/ofoscar',
-      demo_url: 'https://ofoscar.com',
-      cover_image_url: null,
-      published: true,
-      tags: ['Next.js', 'TypeScript'],
-      highlights: ['Next.js', 'TypeScript'],
-      images: null,
-    },
-    {
-      id: 3,
-      title: 'Third project',
-      hook: 'Portfolio Website',
-      description: 'Another one',
-      github_url: 'https://github.com/ofoscar',
-      demo_url: 'https://ofoscar.com',
-      cover_image_url: null,
-      published: true,
-      tags: ['Next.js', 'TypeScript'],
-      highlights: ['Next.js', 'TypeScript'],
-      images: null,
-    },
-  ]);
+  loading = signal(false);
+  error = signal<string | null>(null);
 
   filteredProjects = computed(() =>
     this.projects().filter(
@@ -59,11 +24,27 @@ export class Projects {
         project.description.toLowerCase().includes(this.search().toLowerCase()),
     ),
   );
-
-  deleteProject(id: number) {
-    this.projects.update((projects) => projects.filter((project) => project.id !== id));
+  ngOnInit(): void {
+    this.loadProjects();
   }
 
+  loadProjects(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.projectsService.getProjects().subscribe({
+      next: (projects) => {
+        this.projects.set(projects);
+      },
+      error: (err) => {
+        console.error('Failed to fetch projects', err);
+        this.error.set('Failed to fetch projects');
+      },
+      complete: () => {
+        this.loading.set(false);
+      },
+    });
+  }
   clearSearch() {
     this.search.set('');
   }

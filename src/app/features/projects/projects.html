@@ -9,23 +9,29 @@
     />
     <button (click)="clearSearch()">Clear search</button>
   </div>
-  @if (projects().length == 0) {
-    <p>You haven't created any projects yet.</p>
+
+  @if (loading()) {
+    <p>loading projects...</p>
+  } @else if (error()) {
+    <p>{{ error() }}</p>
   } @else {
-    <p>Total projects: {{ filteredProjects().length }}</p>
-  }
+    @if (projects().length == 0) {
+      <p>You haven't created any projects yet.</p>
+    } @else {
+      <p>Total projects: {{ filteredProjects().length }}</p>
+    }
 
-  @for (project of filteredProjects(); track project.id) {
-    <article>
-      <h2>{{ project.title }}</h2>
-      <p>{{ project.description }}</p>
+    @for (project of filteredProjects(); track project.id) {
+      <article>
+        <h2>{{ project.title }}</h2>
+        <p>{{ project.description }}</p>
 
-      <div>
-        @for (tag of project.tags; track tag) {
-          <span>{{ tag }}</span>
-        }
-      </div>
-      <button (click)="deleteProject(project.id)">Delete</button>
-    </article>
+        <div>
+          @for (tag of project.tags; track tag) {
+            <span>{{ tag }}</span>
+          }
+        </div>
+      </article>
+    }
   }
 </section>
