@@ -10,7 +10,6 @@ import { Project } from '../../features/projects/project.model';
 })
 export class ProjectsService {
   private http = inject(HttpClient);
-
   private apiUrl = environment.apiUrl;
 
   getProjects(): Observable<Project[]> {
