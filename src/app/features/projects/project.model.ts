@@ -10,8 +10,8 @@ export interface Project {
   title: string;
   hook: string;
   description: string;
-  github_url: string;
-  demo_url: string;
+  github_url: string | null;
+  demo_url: string | null;
   cover_image_url: string | null;
   published: boolean;
   tags: string[];
