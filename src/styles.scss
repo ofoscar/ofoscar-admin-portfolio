@@ -1,0 +1,13 @@
+/* Remove the browser's default page inset and make sizing predictable. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
