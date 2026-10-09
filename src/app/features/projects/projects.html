@@ -8,6 +8,7 @@
       (input)="search.set($any($event.target).value)"
     />
     <button (click)="clearSearch()">Clear search</button>
+    <button (click)="loadProjects()" [disabled]="loading()">Refresh projects</button>
   </div>
 
   @if (loading()) {
