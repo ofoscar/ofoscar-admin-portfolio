@@ -8,15 +8,16 @@
       (input)="search.set($any($event.target).value)"
     />
     <button (click)="clearSearch()">Clear search</button>
-    <button (click)="loadProjects()" [disabled]="loading()">Refresh projects</button>
+    <button (click)="refreshProjects()" [disabled]="state().loading">Refresh projects</button>
   </div>
 
-  @if (loading()) {
+  @if (state().loading) {
     <p>loading projects...</p>
-  } @else if (error()) {
-    <p>{{ error() }}</p>
+  } @else if (state().error) {
+    <p>{{ state().error }}</p>
+    <button (click)="refreshProjects()" [disabled]="state().loading">Retry</button>
   } @else {
-    @if (projects().length == 0) {
+    @if (filteredProjects().length == 0) {
       <p>You haven't created any projects yet.</p>
     } @else {
       <p>Total projects: {{ filteredProjects().length }}</p>
