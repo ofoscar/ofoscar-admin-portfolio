@@ -1,1 +1,35 @@
-<p>login works!</p>
+<section>
+  <h1>Ofoscar admin</h1>
+  <p>Sign in to manage your portfolio.</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div>
+      <label for="username">Email</label>
+      <input id="username" type="email" autocomplete="username" formControlName="username" />
+
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <p>Enter a valid email address.</p>
+      }
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        autocomplete="current-password"
+        formControlName="password"
+      />
+
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <p>Password is required.</p>
+      }
+    </div>
+
+    @if (error()) {
+      <p role="alert">{{ error() }}</p>
+    }
+    <button type="submit" [disabled]="form.invalid || loading()">
+      {{ loading() ? 'Signing in...' : 'Sign in' }}
+    </button>
+  </form>
+</section>
