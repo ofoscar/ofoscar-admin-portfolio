@@ -2,9 +2,10 @@
   <h2>{{ title }}</h2>
 
   <nav>
-    <a href="/admin">Dashboard</a>
-    <a href="/admin/projects">Projects</a>
-    <a href="/admin/settings">Settings</a>
+    <a routerLink="/admin">Dashboard</a>
+    <a routerLink="/admin/projects">Projects</a>
+    <a routerLink="/admin/settings">Settings</a>
   </nav>
+  <button type="button" (click)="logout()">Logout</button>
   <p>{{ user }}</p>
 </aside>

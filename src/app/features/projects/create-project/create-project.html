@@ -1,0 +1,83 @@
+<section>
+  <h1>Create Project</h1>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div>
+      <label for="title">Title</label>
+      <input id="title" type="text" formControlName="title" />
+
+      @if (form.controls.title.touched && form.controls.title.invalid) {
+        <p>Title must contain at least 3 characters.</p>
+      }
+    </div>
+    <div>
+      <label for="hook">Hook</label>
+      <input id="hook" type="text" formControlName="hook" />
+
+      @if (form.controls.hook.touched && form.controls.hook.invalid) {
+        <p>Hook must contain at least 10 characters.</p>
+      }
+    </div>
+    <div>
+      <label for="description">Description</label>
+      <input id="description" type="text" formControlName="description" />
+
+      @if (form.controls.description.touched && form.controls.description.invalid) {
+        <p>Description must contain at least 10 characters.</p>
+      }
+    </div>
+    <div>
+      <label for="github_url">Github Url</label>
+      <input id="github_url" type="url" formControlName="github_url" />
+    </div>
+    <div>
+      <label for="demo_url">Demo Url</label>
+      <input id="demo_url" type="url" formControlName="demo_url" />
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" formControlName="published" />
+        Published
+      </label>
+    </div>
+    <div>
+      <label for="tag">Technologies</label>
+      <input
+        id="tag"
+        type="text"
+        [value]="tagInput()"
+        (input)="tagInput.set($any($event.target).value)"
+      />
+      <button type="button" (click)="addTag()">Add Tag</button>
+      <div formArrayName="tags">
+        @for (tag of tags.controls; track tag; let i = $index) {
+          <div>
+            <span>{{ tag.value }}</span>
+            <button type="button" (click)="removeTag(i)">Remove</button>
+          </div>
+        }
+      </div>
+    </div>
+    <div>
+      <label for="highlights">Highlights</label>
+      <input
+        id="highlights"
+        type="text"
+        [value]="highlightInput()"
+        (input)="highlightInput.set($any($event.target).value)"
+      />
+      <button type="button" (click)="addHighlight()">Add Highlight</button>
+      <div formArrayName="highlights">
+        @for (highlight of highlights.controls; track highlight; let i = $index) {
+          <div>
+            <span>{{ highlight.value }}</span>
+            <button type="button" (click)="removeHighlight(i)">Remove</button>
+          </div>
+        }
+      </div>
+    </div>
+    <button type="submit" [disabled]="form.invalid || saving()">
+      {{ saving() ? 'Creating...' : 'Create Project' }}
+    </button>
+  </form>
+</section>

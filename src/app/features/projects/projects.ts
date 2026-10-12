@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { catchError, map, Observable, of, startWith, Subject, switchMap } from 'rxjs';
 import { ProjectsService } from '../../core/services/projects';
 import { Project } from './project.model';
@@ -12,7 +13,7 @@ type ProjectsState = {
 
 @Component({
   selector: 'app-projects',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })

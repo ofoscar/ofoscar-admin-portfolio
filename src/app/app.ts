@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth';
 import { Sidebar } from './layout/sidebar/sidebar';
 
 @Component({
@@ -9,5 +10,6 @@ import { Sidebar } from './layout/sidebar/sidebar';
   styleUrl: './app.scss',
 })
 export class App {
+  authService = inject(AuthService);
   protected readonly title = signal('ofoscar-angular');
 }
