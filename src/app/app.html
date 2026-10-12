@@ -1,4 +1,6 @@
-<app-sidebar />
+@if (authService.isAuthenticated()) {
+  <app-sidebar />
+}
 <main>
   <router-outlet />
 </main>
