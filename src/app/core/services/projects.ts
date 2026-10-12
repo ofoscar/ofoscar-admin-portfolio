@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Project } from '../../features/projects/project.model';
+import { Project, ProjectCreate } from '../../features/projects/project.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,5 +14,9 @@ export class ProjectsService {
 
   getProjects(): Observable<Project[]> {
     return this.http.get<Project[]>(`${this.apiUrl}/projects`);
+  }
+
+  createProject(project: ProjectCreate): Observable<Project> {
+    return this.http.post<Project>(`${this.apiUrl}/projects`, project);
   }
 }

@@ -15,6 +15,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/projects/projects').then((m) => m.Projects),
   },
   {
+    path: 'admin/projects/new',
+    loadComponent: () =>
+      import('./features/projects/create-project/create-project').then((m) => m.CreateProject),
+  },
+  {
     path: 'admin/settings',
     loadComponent: () => import('./features/settings/settings').then((m) => m.Settings),
   },

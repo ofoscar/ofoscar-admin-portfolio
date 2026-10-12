@@ -18,3 +18,15 @@ export interface Project {
   highlights: string[];
   images: ProjectImage[] | null;
 }
+export interface ProjectCreate {
+  title: string;
+  hook: string;
+  description: string;
+  github_url: string | null;
+  demo_url: string | null;
+  cover_image_url: string | null;
+  published: boolean;
+  tags: string[];
+  highlights: string[];
+  images: ProjectImage[] | null;
+}
