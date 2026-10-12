@@ -1,6 +1,14 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, Observable, of, startWith, Subject, switchMap } from 'rxjs';
 import { ProjectsService } from '../../core/services/projects';
 import { Project } from './project.model';
+
+type ProjectsState = {
+  projects: Project[];
+  loading: boolean;
+  error: string | null;
+};
 
 @Component({
   selector: 'app-projects',
@@ -8,43 +16,67 @@ import { Project } from './project.model';
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })
-export class Projects implements OnInit {
+export class Projects {
   private projectsService = inject(ProjectsService);
 
-  projects = signal<Project[]>([]);
+  private refresh$ = new Subject<void>();
+
   search = signal('');
 
-  loading = signal(false);
-  error = signal<string | null>(null);
+  private initialState: ProjectsState = {
+    projects: [],
+    loading: true,
+    error: null,
+  };
 
-  filteredProjects = computed(() =>
-    this.projects().filter(
-      (project) =>
-        project.title.toLowerCase().includes(this.search().toLowerCase()) ||
-        project.description.toLowerCase().includes(this.search().toLowerCase()),
+  private state$: Observable<ProjectsState> = this.refresh$.pipe(
+    startWith(undefined),
+
+    switchMap(() =>
+      this.projectsService.getProjects().pipe(
+        map(
+          (projects): ProjectsState => ({
+            projects,
+            loading: false,
+            error: null,
+          }),
+        ),
+
+        startWith({
+          projects: [],
+          loading: true,
+          error: null,
+        } as ProjectsState),
+
+        catchError(() =>
+          of<ProjectsState>({
+            projects: [],
+            loading: false,
+            error: 'Failed to load projects',
+          } satisfies ProjectsState),
+        ),
+      ),
     ),
   );
-  ngOnInit(): void {
-    this.loadProjects();
+
+  state = toSignal(this.state$, {
+    initialValue: this.initialState,
+  });
+
+  filteredProjects = computed(() => {
+    const search = this.search().toLocaleLowerCase();
+
+    return this.state()?.projects.filter(
+      (project) =>
+        project.title.toLocaleLowerCase().includes(search) ||
+        project.description.toLocaleLowerCase().includes(search),
+    );
+  });
+
+  refreshProjects() {
+    this.refresh$.next();
   }
 
-  loadProjects(): void {
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.projectsService.getProjects().subscribe({
-      next: (projects) => {
-        this.projects.set(projects);
-      },
-      error: (err) => {
-        console.error('Failed to fetch projects', err);
-        this.error.set('Failed to fetch projects');
-      },
-      complete: () => {
-        this.loading.set(false);
-      },
-    });
-  }
   clearSearch() {
     this.search.set('');
   }
