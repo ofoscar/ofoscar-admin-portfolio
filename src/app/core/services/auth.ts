@@ -1,11 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { tap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-interface LoginResponse {
-  access_token: string;
-  token_type: string;
+interface AdminUser {
+  email: string;
 }
 @Injectable({
   providedIn: 'root',
@@ -15,30 +14,39 @@ export class AuthService {
 
   private apiUrl = environment.apiUrl;
 
-  private accessToken = signal<string | null>(null);
+  private user = signal<AdminUser | null>(null);
 
-  isAuthenticated = computed(() => this.accessToken() !== null);
+  isAuthenticated = computed(() => this.user() !== null);
 
-  getToken(): string | null {
-    return this.accessToken();
-  }
+  currentUser = this.user.asReadonly();
 
   login(username: string, password: string) {
     const body = new HttpParams().set('username', username).set('password', password);
+
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/auth/login`, body.toString(), {
+      .post<void>(`${this.apiUrl}/auth/login`, body.toString(), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
+        withCredentials: true,
       })
-      .pipe(
-        tap((response) => {
-          this.accessToken.set(response.access_token);
-        }),
-      );
+      .pipe(switchMap(() => this.checkSession()));
   }
 
-  logout(): void {
-    this.accessToken.set(null);
+  checkSession() {
+    return this.http.get<AdminUser>(`${this.apiUrl}/auth/me`, { withCredentials: true }).pipe(
+      tap((user) => this.user.set(user)),
+      map(() => true),
+      catchError(() => {
+        this.user.set(null);
+        return of(false);
+      }),
+    );
+  }
+
+  logout() {
+    return this.http
+      .post<void>(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
+      .pipe(tap(() => this.user.set(null)));
   }
 }
