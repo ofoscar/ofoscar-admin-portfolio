@@ -9,6 +9,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: '',
