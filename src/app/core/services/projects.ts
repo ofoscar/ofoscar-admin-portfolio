@@ -16,6 +16,10 @@ export class ProjectsService {
     return this.http.get<Project[]>(`${this.apiUrl}/projects`);
   }
 
+  getProject(id: number): Observable<Project> {
+    return this.http.get<Project>(`${this.apiUrl}/projects/${id}`);
+  }
+
   updateProject(id: number, changes: ProjectUpdate): Observable<Project> {
     return this.http.patch<Project>(`${this.apiUrl}/projects/${id}`, changes);
   }

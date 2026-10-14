@@ -25,16 +25,42 @@
     }
 
     @for (project of filteredProjects(); track project.id) {
-      <article>
-        <h2>{{ project.title }}</h2>
-        <p>{{ project.description }}</p>
+      <div>
+        <article>
+          <h2>{{ project.title }}</h2>
+          <p>{{ project.description }}</p>
 
-        <div>
-          @for (tag of project.tags; track tag) {
-            <span>{{ tag }}</span>
-          }
-        </div>
-      </article>
+          <div>
+            @for (tag of project.tags; track tag) {
+              <span>{{ tag }}</span>
+            }
+          </div>
+        </article>
+        <a [routerLink]="['/admin/projects', project.id, 'edit']"> Edit </a>
+        <button type="button" (click)="requestDelete(project.id)">Delete</button>
+        @if (confirmDeleteId() === project.id) {
+          <div role="group" aria-label="Confirm project deletion">
+            <p>
+              Are you sure you want to delete
+              {{ project.title }}?
+            </p>
+
+            <button type="button" (click)="cancelDelete()">Cancel</button>
+
+            <button
+              type="button"
+              [disabled]="deletingId() !== null"
+              (click)="deleteProject(project.id)"
+            >
+              {{ deletingId() === project.id ? 'Deleting...' : 'Confirm Delete' }}
+            </button>
+          </div>
+        }
+
+        @if (deleteError() && confirmDeleteId() === project.id) {
+          <p role="alert">{{ deleteError() }}</p>
+        }
+      </div>
     }
   }
 </section>
