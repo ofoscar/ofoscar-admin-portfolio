@@ -3,26 +3,38 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
+import { ImageUploadService } from '../../../core/services/image-upload';
 import { ProjectsService } from '../../../core/services/projects';
+import { ImageUploader } from '../../../shared/image-uploader/image-uploader';
 import { ProjectCreate } from '../project.model';
 
 @Component({
   selector: 'app-create-project',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageUploader],
   templateUrl: './create-project.html',
   styleUrl: './create-project.scss',
 })
 export class CreateProject {
   private projectsService = inject(ProjectsService);
   private router = inject(Router);
+  private imageUploadService = inject(ImageUploadService);
 
   private fb = inject(FormBuilder).nonNullable;
 
   saving = signal(false);
   error = signal<string | null>(null);
 
+  coverUploading = signal(false);
+
   tagInput = signal('');
   highlightInput = signal('');
+
+  private createImageGroup(imageUrl = '', description = '') {
+    return this.fb.group({
+      image_url: [imageUrl, Validators.required],
+      description: [description],
+    });
+  }
 
   form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
@@ -35,12 +47,34 @@ export class CreateProject {
 
     demo_url: ['', Validators.pattern(/^https?:\/\/.+/)],
 
+    cover_image_url: [''],
+
     published: [false],
 
     tags: this.fb.array<string>([]),
 
     highlights: this.fb.array<string>([]),
+
+    images: this.fb.array<ReturnType<typeof this.createImageGroup>>([]),
   });
+
+  get images() {
+    return this.form.controls.images;
+  }
+
+  galleryUploading = signal(false);
+
+  onGalleryImageUploaded(url: string): void {
+    this.images.push(this.createImageGroup(url));
+  }
+
+  removeImage(index: number): void {
+    this.images.removeAt(index);
+  }
+
+  onCoverImageUploaded(url: string) {
+    this.form.controls.cover_image_url.setValue(url);
+  }
 
   get tags() {
     return this.form.controls.tags;
@@ -82,7 +116,7 @@ export class CreateProject {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.saving() || this.coverUploading() || this.galleryUploading()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -93,8 +127,8 @@ export class CreateProject {
       ...values,
       github_url: values.github_url || null,
       demo_url: values.demo_url || null,
-      cover_image_url: null,
-      images: [],
+      cover_image_url: values.cover_image_url || null,
+      images: values.images,
     };
 
     this.saving.set(true);
