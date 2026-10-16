@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ImageUploadService } from '../../../core/services/image-upload';
 import { ProjectsService } from '../../../core/services/projects';
+import { ImageUploader } from '../../../shared/image-uploader/image-uploader';
 import { ProjectCreate } from '../project.model';
 
 @Component({
   selector: 'app-create-project',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageUploader],
   templateUrl: './create-project.html',
   styleUrl: './create-project.scss',
 })
@@ -23,11 +24,17 @@ export class CreateProject {
   saving = signal(false);
   error = signal<string | null>(null);
 
-  uploadingImage = signal(false);
-  uploadError = signal<string | null>(null);
+  coverUploading = signal(false);
 
   tagInput = signal('');
   highlightInput = signal('');
+
+  private createImageGroup(imageUrl = '', description = '') {
+    return this.fb.group({
+      image_url: [imageUrl, Validators.required],
+      description: [description],
+    });
+  }
 
   form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
@@ -47,7 +54,27 @@ export class CreateProject {
     tags: this.fb.array<string>([]),
 
     highlights: this.fb.array<string>([]),
+
+    images: this.fb.array<ReturnType<typeof this.createImageGroup>>([]),
   });
+
+  get images() {
+    return this.form.controls.images;
+  }
+
+  galleryUploading = signal(false);
+
+  onGalleryImageUploaded(url: string): void {
+    this.images.push(this.createImageGroup(url));
+  }
+
+  removeImage(index: number): void {
+    this.images.removeAt(index);
+  }
+
+  onCoverImageUploaded(url: string) {
+    this.form.controls.cover_image_url.setValue(url);
+  }
 
   get tags() {
     return this.form.controls.tags;
@@ -88,63 +115,8 @@ export class CreateProject {
     this.highlights.removeAt(index);
   }
 
-  onCoverImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-
-    if (!allowedTypes.includes(file.type)) {
-      this.uploadError.set('Unsupported image format.');
-      input.value = '';
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-      this.uploadError.set('Image must me smaller than 5 MB');
-      input.value = '';
-      return;
-    }
-
-    if (this.uploadingImage()) return;
-
-    this.uploadingImage.set(true);
-    this.uploadError.set(null);
-
-    this.imageUploadService
-      .uploadImage(file)
-      .pipe(
-        finalize(() => {
-          this.uploadingImage.set(false);
-          input.value = '';
-        }),
-      )
-      .subscribe({
-        next: (response) => {
-          this.form.patchValue({
-            cover_image_url: response.url,
-          });
-        },
-        error: (err: HttpErrorResponse) => {
-          console.error('Image upload failed: ', err);
-
-          if (err.status === 401) {
-            this.uploadError.set('Please log in again');
-          } else if (err.status === 413) {
-            this.uploadError.set('Image is too large');
-          } else {
-            this.uploadError.set('Failed to upload image');
-          }
-        },
-      });
-  }
-
   onSubmit(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.saving() || this.coverUploading() || this.galleryUploading()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -156,7 +128,7 @@ export class CreateProject {
       github_url: values.github_url || null,
       demo_url: values.demo_url || null,
       cover_image_url: values.cover_image_url || null,
-      images: [],
+      images: values.images,
     };
 
     this.saving.set(true);
