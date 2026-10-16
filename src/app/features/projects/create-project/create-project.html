@@ -35,6 +35,41 @@
       <input id="demo_url" type="url" formControlName="demo_url" />
     </div>
     <div>
+      <label for="cover-image">Cover Image</label>
+
+      <input
+        id="cover-image"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        [disabled]="uploadingImage() || saving()"
+        (change)="onCoverImageSelected($event)"
+      />
+
+      @if (uploadingImage()) {
+        <p>Uploading image to S3...</p>
+      }
+
+      @if (uploadError()) {
+        <p role="alert">{{ uploadError() }}</p>
+      }
+
+      @if (form.controls.cover_image_url.value; as imageUrl) {
+        <div>
+          <p>Cover image uploaded successfully!</p>
+
+          <img
+            [src]="imageUrl"
+            alt="Project cover preview"
+            style="max-width: 300px; border-radius: 8px"
+          />
+
+          <p>
+            <a [href]="imageUrl" target="_blank" rel="noopener noreferrer"> View uploaded image </a>
+          </p>
+        </div>
+      }
+    </div>
+    <div>
       <label>
         <input type="checkbox" formControlName="published" />
         Published

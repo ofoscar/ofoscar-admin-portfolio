@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
+import { ImageUploadService } from '../../../core/services/image-upload';
 import { ProjectsService } from '../../../core/services/projects';
 import { ProjectCreate } from '../project.model';
 
@@ -15,11 +16,15 @@ import { ProjectCreate } from '../project.model';
 export class CreateProject {
   private projectsService = inject(ProjectsService);
   private router = inject(Router);
+  private imageUploadService = inject(ImageUploadService);
 
   private fb = inject(FormBuilder).nonNullable;
 
   saving = signal(false);
   error = signal<string | null>(null);
+
+  uploadingImage = signal(false);
+  uploadError = signal<string | null>(null);
 
   tagInput = signal('');
   highlightInput = signal('');
@@ -34,6 +39,8 @@ export class CreateProject {
     github_url: ['', Validators.pattern(/^https?:\/\/.+/)],
 
     demo_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+
+    cover_image_url: [''],
 
     published: [false],
 
@@ -81,6 +88,61 @@ export class CreateProject {
     this.highlights.removeAt(index);
   }
 
+  onCoverImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      this.uploadError.set('Unsupported image format.');
+      input.value = '';
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      this.uploadError.set('Image must me smaller than 5 MB');
+      input.value = '';
+      return;
+    }
+
+    if (this.uploadingImage()) return;
+
+    this.uploadingImage.set(true);
+    this.uploadError.set(null);
+
+    this.imageUploadService
+      .uploadImage(file)
+      .pipe(
+        finalize(() => {
+          this.uploadingImage.set(false);
+          input.value = '';
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          this.form.patchValue({
+            cover_image_url: response.url,
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Image upload failed: ', err);
+
+          if (err.status === 401) {
+            this.uploadError.set('Please log in again');
+          } else if (err.status === 413) {
+            this.uploadError.set('Image is too large');
+          } else {
+            this.uploadError.set('Failed to upload image');
+          }
+        },
+      });
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -93,7 +155,7 @@ export class CreateProject {
       ...values,
       github_url: values.github_url || null,
       demo_url: values.demo_url || null,
-      cover_image_url: null,
+      cover_image_url: values.cover_image_url || null,
       images: [],
     };
 
