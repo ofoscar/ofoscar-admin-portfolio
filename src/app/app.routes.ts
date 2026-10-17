@@ -25,6 +25,11 @@ export const routes: Routes = [
           import('./features/projects/create-project/create-project').then((m) => m.CreateProject),
       },
       {
+        path: 'projects/:id/edit',
+        loadComponent: () =>
+          import('./features/projects/edit-project/edit-project').then((m) => m.EditProject),
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./features/settings/settings').then((m) => m.Settings),
       },

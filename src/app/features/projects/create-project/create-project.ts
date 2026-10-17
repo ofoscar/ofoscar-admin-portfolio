@@ -3,7 +3,6 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { ImageUploadService } from '../../../core/services/image-upload';
 import { ProjectsService } from '../../../core/services/projects';
 import { ImageUploader } from '../../../shared/image-uploader/image-uploader';
 import { ProjectCreate } from '../project.model';
@@ -15,11 +14,9 @@ import { ProjectCreate } from '../project.model';
   styleUrl: './create-project.scss',
 })
 export class CreateProject {
+  private fb = inject(FormBuilder).nonNullable;
   private projectsService = inject(ProjectsService);
   private router = inject(Router);
-  private imageUploadService = inject(ImageUploadService);
-
-  private fb = inject(FormBuilder).nonNullable;
 
   saving = signal(false);
   error = signal<string | null>(null);
