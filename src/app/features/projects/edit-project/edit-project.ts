@@ -115,13 +115,19 @@ export class EditProject {
             demo_url: project.demo_url ?? '',
             published: project.published,
             tags: project.tags,
-            highlights: project.tags,
+            highlights: project.highlights,
           });
 
           this.tags.clear();
 
           for (const tag of project.tags) {
             this.tags.push(this.fb.control(tag));
+          }
+
+          this.highlights.clear();
+
+          for (const highlight of project.highlights) {
+            this.highlights.push(this.fb.control(highlight));
           }
 
           this.form.markAsPristine();
@@ -142,16 +148,20 @@ export class EditProject {
 
     const changes: ProjectUpdate = {};
 
-    if (values.title !== this.originalProject.title) {
+    const github = values.github_url || null;
+    const demo = values.demo_url || null;
+    const published = values.published;
+    const title = values.title;
+    const description = values.description;
+    const hook = values.hook;
+
+    if (title !== this.originalProject.title) {
       changes.title = values.title;
     }
 
-    if (values.description !== this.originalProject.description) {
+    if (description !== this.originalProject.description) {
       changes.description = values.description;
     }
-
-    const github = values.github_url || null;
-    const demo = values.demo_url || null;
 
     if (github !== this.originalProject.github_url) {
       changes.github_url = github;
@@ -161,8 +171,19 @@ export class EditProject {
       changes.demo_url = demo;
     }
 
+    if (published !== this.originalProject.published) {
+      changes.published = published;
+    }
+
+    if (hook !== this.originalProject.hook) {
+      changes.hook = hook;
+    }
+
     if (JSON.stringify(values.tags) !== JSON.stringify(this.originalProject.tags)) {
       changes.tags = values.tags;
+    }
+    if (JSON.stringify(values.highlights) !== JSON.stringify(this.originalProject.highlights)) {
+      changes.highlights = values.highlights;
     }
 
     if (Object.keys(changes).length === 0) {
