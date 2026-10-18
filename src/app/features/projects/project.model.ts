@@ -27,7 +27,7 @@ export interface Project {
   published: boolean;
   tags: string[];
   highlights: string[];
-  images: ProjectImage[] | null;
+  images: ProjectImage[];
 }
 export interface ProjectCreate {
   title: string;
