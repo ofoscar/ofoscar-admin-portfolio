@@ -41,6 +41,20 @@
         <input id="demo_url" type="url" formControlName="demo_url" />
       </div>
       <div>
+        <label for="cover-image">Cover Image</label>
+
+        <app-image-uploader
+          label="Select Cover Image"
+          [disabled]="saving() || galleryUploading()"
+          (imageUploaded)="onCoverImageUploaded($event)"
+          (uploadingChange)="coverUploading.set($event)"
+        />
+
+        @if (form.controls.cover_image_url.value; as url) {
+          <img [src]="url" alt="Project cover" width="300" />
+        }
+      </div>
+      <div>
         <label>
           <input type="checkbox" formControlName="published" />
           Published

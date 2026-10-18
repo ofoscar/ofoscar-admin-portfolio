@@ -4,11 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ProjectsService } from '../../../core/services/projects';
+import { ImageUploader } from '../../../shared/image-uploader/image-uploader';
 import { Project, ProjectUpdate } from '../project.model';
 
 @Component({
   selector: 'app-edit-project',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageUploader],
   templateUrl: './edit-project.html',
   styleUrl: './edit-project.scss',
 })
@@ -27,6 +28,13 @@ export class EditProject {
   tagInput = signal('');
   highlightInput = signal('');
   originalProject: Project | null = null;
+  coverUploading = signal(false);
+
+  galleryUploading = signal(false);
+
+  onCoverImageUploaded(url: string) {
+    this.form.controls.cover_image_url.setValue(url);
+  }
 
   form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
@@ -38,6 +46,8 @@ export class EditProject {
     github_url: ['', Validators.pattern(/^https?:\/\/.+/)],
 
     demo_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+
+    cover_image_url: [''],
 
     published: [false],
 
@@ -113,6 +123,7 @@ export class EditProject {
             description: project.description,
             github_url: project.github_url ?? '',
             demo_url: project.demo_url ?? '',
+            cover_image_url: project.cover_image_url ?? '',
             published: project.published,
             tags: project.tags,
             highlights: project.highlights,
@@ -154,6 +165,7 @@ export class EditProject {
     const title = values.title;
     const description = values.description;
     const hook = values.hook;
+    const cover_image_url = values.cover_image_url;
 
     if (title !== this.originalProject.title) {
       changes.title = values.title;
@@ -169,6 +181,10 @@ export class EditProject {
 
     if (demo !== this.originalProject.demo_url) {
       changes.demo_url = demo;
+    }
+
+    if (cover_image_url !== this.originalProject.cover_image_url) {
+      changes.cover_image_url = cover_image_url;
     }
 
     if (published !== this.originalProject.published) {
