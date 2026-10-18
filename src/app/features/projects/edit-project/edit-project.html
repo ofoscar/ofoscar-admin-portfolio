@@ -96,8 +96,41 @@
           }
         </div>
       </div>
+      <div>
+        <h2>Project Gallery</h2>
+
+        <app-image-uploader
+          label="Add Gallery Image"
+          [disabled]="saving() || coverUploading()"
+          (imageUploaded)="onGalleryImageUploaded($event)"
+          (uploadingChange)="galleryUploading.set($event)"
+        />
+
+        <div formArrayName="images">
+          @for (image of images.controls; track image; let i = $index) {
+            <div [formGroupName]="i">
+              <img [src]="image.controls.image_url.value" alt="Project gallery image" width="250" />
+
+              <label [for]="'description-' + i"> Description </label>
+
+              <input
+                [id]="'description-' + i"
+                type="text"
+                formControlName="description"
+                placeholder="Describe this image"
+              />
+
+              <button type="button" [disabled]="saving()" (click)="removeImage(i)">
+                Remove Image
+              </button>
+            </div>
+          } @empty {
+            <p>No gallery images added yet.</p>
+          }
+        </div>
+      </div>
       <button type="submit" [disabled]="form.invalid || saving()">
-        {{ saving() ? 'Creating...' : 'Save Project' }}
+        {{ saving() ? 'Saving...' : 'Edit Project' }}
       </button>
     </form>
   }

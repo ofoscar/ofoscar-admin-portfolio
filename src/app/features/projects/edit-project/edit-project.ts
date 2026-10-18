@@ -32,8 +32,27 @@ export class EditProject {
 
   galleryUploading = signal(false);
 
+  get images() {
+    return this.form.controls.images;
+  }
+
+  onGalleryImageUploaded(url: string): void {
+    this.images.push(this.createImageGroup(url));
+  }
+
+  removeImage(index: number): void {
+    this.images.removeAt(index);
+  }
+
   onCoverImageUploaded(url: string) {
     this.form.controls.cover_image_url.setValue(url);
+  }
+
+  private createImageGroup(imageUrl = '', description = '') {
+    return this.fb.group({
+      image_url: [imageUrl, Validators.required],
+      description: [description],
+    });
   }
 
   form = this.fb.group({
@@ -54,6 +73,8 @@ export class EditProject {
     tags: this.fb.array<string>([]),
 
     highlights: this.fb.array<string>([]),
+
+    images: this.fb.array<ReturnType<typeof this.createImageGroup>>([]),
   });
 
   get tags() {
@@ -127,6 +148,7 @@ export class EditProject {
             published: project.published,
             tags: project.tags,
             highlights: project.highlights,
+            images: project.images,
           });
 
           this.tags.clear();
@@ -139,6 +161,12 @@ export class EditProject {
 
           for (const highlight of project.highlights) {
             this.highlights.push(this.fb.control(highlight));
+          }
+
+          this.images.clear();
+
+          for (const image of project.images) {
+            this.images.push(this.fb.group(image));
           }
 
           this.form.markAsPristine();
@@ -166,6 +194,7 @@ export class EditProject {
     const description = values.description;
     const hook = values.hook;
     const cover_image_url = values.cover_image_url;
+    const images = values.images;
 
     if (title !== this.originalProject.title) {
       changes.title = values.title;
@@ -200,6 +229,10 @@ export class EditProject {
     }
     if (JSON.stringify(values.highlights) !== JSON.stringify(this.originalProject.highlights)) {
       changes.highlights = values.highlights;
+    }
+
+    if (JSON.stringify(images) !== JSON.stringify(this.originalProject.images)) {
+      changes.images = images;
     }
 
     if (Object.keys(changes).length === 0) {
