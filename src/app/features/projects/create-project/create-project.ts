@@ -99,7 +99,7 @@ export class CreateProject {
   addHighlight(): void {
     const highlight = this.highlightInput().trim();
 
-    if (!highlight || highlight.length > 25) return;
+    if (!highlight || highlight.length > 300) return;
 
     if (this.highlights.controls.some((control) => control.value === highlight)) return;
 
