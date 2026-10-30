@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
 import { ImageUploadService } from './image-upload';
@@ -6,7 +7,7 @@ describe('ImageUploadService', () => {
   let service: ImageUploadService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [provideHttpClient()] });
     service = TestBed.inject(ImageUploadService);
   });
 
