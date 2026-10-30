@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -10,7 +11,7 @@ describe('Dashboard', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideRouter([])],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideRouter([])],
       imports: [Dashboard]
     })
     .compileComponents();
