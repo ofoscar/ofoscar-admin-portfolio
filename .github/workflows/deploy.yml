@@ -39,6 +39,21 @@ jobs:
       - name: Generate environment and build
         run: npm run build
 
+      - name: Normalize browser entry point
+        shell: bash
+        run: |
+          browser_output=dist/ofoscar-angular/browser
+          if [[ -f "$browser_output/index.csr.html" ]]; then
+            if [[ -e "$browser_output/index.html" ]]; then
+              echo 'Both index.csr.html and index.html exist; refusing to overwrite.'
+              exit 1
+            fi
+            mv "$browser_output/index.csr.html" "$browser_output/index.html"
+          elif [[ ! -f "$browser_output/index.html" ]]; then
+            echo 'Neither index.csr.html nor index.html was generated.'
+            exit 1
+          fi
+
       - name: Run unit tests
         run: npm test -- --no-watch --browsers=ChromeHeadless
 
@@ -61,18 +76,6 @@ jobs:
       id-token: write
 
     steps:
-      - name: Print OIDC subject
-        shell: bash
-        run: |
-          set +x
-          token_json=$(curl -fsS \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")
-          id_token=$(jq -r '.value' <<< "$token_json")
-          payload=$(cut -d. -f2 <<< "$id_token" | tr '_-' '/+')
-          while (( ${#payload} % 4 )); do payload="${payload}="; done
-          printf '%s' "$payload" | base64 -d | jq -r '"sub=\(.sub)\naud=\(.aud)"'
-                  
       - name: Download production build
         uses: actions/download-artifact@v4
         with:
@@ -97,7 +100,7 @@ jobs:
           S3_DEPLOY_BUCKET: ${{ vars.S3_DEPLOY_BUCKET }}
         run: |
           set -euo pipefail
-          REMOTE_COMMAND="set -euo pipefail; aws s3 sync s3://${S3_DEPLOY_BUCKET}/angular/${GITHUB_SHA}/ /home/ubuntu/ofoscar-angular/dist/ --delete"
+          REMOTE_COMMAND="set -eu; aws s3 sync s3://${S3_DEPLOY_BUCKET}/angular/${GITHUB_SHA}/ /home/ubuntu/ofoscar-angular/dist/ --delete"
           PARAMETERS=$(jq -n --arg command "$REMOTE_COMMAND" '{commands: [$command]}')
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \
