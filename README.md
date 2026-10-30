@@ -57,3 +57,20 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## GitHub Actions deployment
+
+The `.github/workflows/deploy.yml` workflow builds the production site and runs the unit tests for pull requests and pushes to `main`. A successful push to `main` uploads `dist/ofoscar-angular/browser/` to S3, then uses AWS Systems Manager (SSM) to have the EC2 instance sync those files into `/home/ubuntu/ofoscar-angular/dist/`. GitHub authenticates to AWS with OIDC; no SSH key is stored in GitHub.
+
+Configure these repository variables in **Settings → Secrets and variables → Actions → Variables**:
+
+- `API_URL`: API base URL embedded in the production build.
+- `AWS_REGION`: AWS region, such as `us-east-2`.
+- `S3_DEPLOY_BUCKET`: private bucket used to stage versioned Angular build files.
+
+Configure these repository secrets in **Settings → Secrets and variables → Actions → Secrets**:
+
+- `AWS_DEPLOY_ROLE_ARN`: IAM role ARN that trusts this GitHub repository through OIDC. Scope its S3 upload permissions to the staging prefix and its SSM permissions to the target instance and `AWS-RunShellScript` document. The workflow uses `SendCommand` and `GetCommandInvocation`.
+- `EC2_INSTANCE_ID`: ID of the target EC2 instance.
+
+The EC2 instance must be managed by Systems Manager (SSM Agent online and an instance profile with `AmazonSSMManagedInstanceCore` or equivalent). Its instance profile also needs `s3:GetObject` for the staging prefix, and the instance needs network access to S3 and SSM endpoints. The instance must have AWS CLI installed and the SSM command must be able to write to `/home/ubuntu/ofoscar-angular/dist/`. Keep the S3 bucket private; lifecycle rules can remove old `angular/` build prefixes after a retention period.
