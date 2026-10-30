@@ -46,5 +46,3 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Generated Angular configuration
-src/environments/environment.ts
