@@ -64,7 +64,6 @@ The `.github/workflows/deploy.yml` workflow builds the production site and runs 
 
 Configure these repository variables in **Settings → Secrets and variables → Actions → Variables**:
 
-- `API_URL`: API base URL embedded in the production build.
 - `AWS_REGION`: AWS region, such as `us-east-2`.
 - `S3_DEPLOY_BUCKET`: private bucket used to stage versioned Angular build files.
 
