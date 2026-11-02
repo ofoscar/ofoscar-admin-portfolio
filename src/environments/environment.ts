@@ -1,3 +1,4 @@
 export const environment = {
-  apiUrl: "https://api.ofoscar.com"
+  production: true,
+  apiUrl: 'https://api.ofoscar.com',
 };
