@@ -100,7 +100,7 @@ jobs:
           S3_DEPLOY_BUCKET: ${{ vars.S3_DEPLOY_BUCKET }}
         run: |
           set -euo pipefail
-          REMOTE_COMMAND="set -eu; aws s3 sync s3://${S3_DEPLOY_BUCKET}/angular/${GITHUB_SHA}/ /home/ubuntu/ofoscar-angular/dist/ --delete"
+          REMOTE_COMMAND="set -eu; mkdir -p /srv/angular; aws s3 sync s3://${S3_DEPLOY_BUCKET}/angular/${GITHUB_SHA}/ /srv/angular/ --delete"
           PARAMETERS=$(jq -n --arg command "$REMOTE_COMMAND" '{commands: [$command]}')
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \
