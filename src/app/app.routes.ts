@@ -25,6 +25,11 @@ export const routes: Routes = [
           import('./features/videos/create-video/create-video').then((m) => m.CreateVideo),
       },
       {
+        path: 'videos/:id/edit',
+        loadComponent: () =>
+          import('./features/videos/edit-video/edit-video').then((m) => m.EditVideo),
+      },
+      {
         path: 'projects',
         loadComponent: () => import('./features/projects/projects').then((m) => m.Projects),
       },

@@ -1,0 +1,29 @@
+<section>
+  <a routerLink="/admin/videos">Back to videos</a>
+  <h1>Edit Video</h1>
+
+  @if (loading()) {
+    <p>Loading video...</p>
+  } @else if (error()) {
+    <p role="alert">{{ error() }}</p>
+    @if (error() === 'Failed to load video.') {
+      <button type="button" (click)="loadVideo()">Retry</button>
+    }
+  } @else if (video(); as currentVideo) {
+    <dl>
+      <dt>Title</dt>
+      <dd>{{ currentVideo.title }}</dd>
+      <dt>Slug</dt>
+      <dd>{{ currentVideo.slug }}</dd>
+      <dt>Type</dt>
+      <dd>{{ currentVideo.type }}</dd>
+      <dt>Date uploaded</dt>
+      <dd>{{ currentVideo.date_uploaded | date: 'medium' }}</dd>
+      <dt>Category</dt>
+      <dd>{{ currentVideo.category }}</dd>
+      <dt>Link</dt>
+      <dd><a [href]="currentVideo.link" target="_blank" rel="noopener">{{ currentVideo.link }}</a></dd>
+    </dl>
+    <p>Video updates are not available yet.</p>
+  }
+</section>
