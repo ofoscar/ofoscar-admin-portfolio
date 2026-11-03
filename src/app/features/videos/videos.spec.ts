@@ -1,4 +1,7 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { Videos } from './videos';
 
@@ -8,7 +11,8 @@ describe('Videos', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Videos]
+      imports: [Videos],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideRouter([])],
     })
     .compileComponents();
 
