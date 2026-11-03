@@ -1,9 +1,9 @@
-enum VideoType {
+export enum VideoType {
   SHORT_FORM = 'Short form',
   YOUTUBE_VIDEO = 'Youtube video',
 }
 
-enum VideoCategory {
+export enum VideoCategory {
   SOFTWARE_DEVELOPMENT = 'Software development',
 }
 
@@ -16,3 +16,5 @@ export interface Video {
   category: VideoCategory;
   link: string;
 }
+
+export type VideoCreate = Omit<Video, 'id' | 'date_uploaded'> & { date_uploaded: string };
