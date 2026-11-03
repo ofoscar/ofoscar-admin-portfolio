@@ -1,0 +1,20 @@
+<section>
+  <a routerLink="/admin/videos/new"> Create Video </a>
+  @if (state().loading) {
+    <p>loading videos...</p>
+  } @else if (state().error) {
+    <p>{{ state().error }}</p>
+    <button (click)="refreshVideos()" [disabled]="state().loading">Retry</button>
+  } @else {
+    <p>Total videos: {{ filteredVideos().length }}</p>
+  }
+
+  @for (video of filteredVideos(); track video.id) {
+    <div>
+      <article>
+        <h2>{{ video.title }}</h2>
+        <p>{{ video.type }}</p>
+      </article>
+    </div>
+  }
+</section>
