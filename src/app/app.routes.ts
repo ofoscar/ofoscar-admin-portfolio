@@ -20,6 +20,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/videos/videos').then((m) => m.Videos),
       },
       {
+        path: 'videos/new',
+        loadComponent: () =>
+          import('./features/videos/create-video/create-video').then((m) => m.CreateVideo),
+      },
+      {
         path: 'projects',
         loadComponent: () => import('./features/projects/projects').then((m) => m.Projects),
       },
