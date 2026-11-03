@@ -15,6 +15,7 @@
         <h2>{{ video.title }}</h2>
         <p>{{ video.type }}</p>
       </article>
+        <a [routerLink]="['/admin/videos', video.id, 'edit']">Edit</a>
     </div>
   }
 </section>

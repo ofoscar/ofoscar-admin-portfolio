@@ -18,3 +18,5 @@ export interface Video {
 }
 
 export type VideoCreate = Omit<Video, 'id' | 'date_uploaded'> & { date_uploaded: string };
+
+export type VideoUpdate = Partial<VideoCreate>;
