@@ -4,26 +4,64 @@
 
   @if (loading()) {
     <p>Loading video...</p>
-  } @else if (error()) {
+  } @else if (error() === 'Video not found.' || error() === 'Invalid video ID.') {
     <p role="alert">{{ error() }}</p>
-    @if (error() === 'Failed to load video.') {
-      <button type="button" (click)="loadVideo()">Retry</button>
+  } @else {
+    @if (error()) {
+      <p role="alert">{{ error() }}</p>
     }
-  } @else if (video(); as currentVideo) {
-    <dl>
-      <dt>Title</dt>
-      <dd>{{ currentVideo.title }}</dd>
-      <dt>Slug</dt>
-      <dd>{{ currentVideo.slug }}</dd>
-      <dt>Type</dt>
-      <dd>{{ currentVideo.type }}</dd>
-      <dt>Date uploaded</dt>
-      <dd>{{ currentVideo.date_uploaded | date: 'medium' }}</dd>
-      <dt>Category</dt>
-      <dd>{{ currentVideo.category }}</dd>
-      <dt>Link</dt>
-      <dd><a [href]="currentVideo.link" target="_blank" rel="noopener">{{ currentVideo.link }}</a></dd>
-    </dl>
-    <p>Video updates are not available yet.</p>
+
+    <form [formGroup]="form" (ngSubmit)="saveVideo()">
+      <div>
+        <label for="title">Title</label>
+        <input id="title" type="text" formControlName="title" />
+        @if (form.controls.title.touched && form.controls.title.invalid) {
+          <p>Title must contain 3 to 200 characters.</p>
+        }
+      </div>
+
+      <div>
+        <label for="slug">Slug</label>
+        <input id="slug" type="text" formControlName="slug" />
+        @if (form.controls.slug.touched && form.controls.slug.invalid) {
+          <p>Slug must contain 3 to 300 characters.</p>
+        }
+      </div>
+
+      <div>
+        <label for="type">Video type</label>
+        <select id="type" formControlName="type">
+          @for (type of videoTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label for="date_uploaded">Date uploaded</label>
+        <input id="date_uploaded" type="datetime-local" formControlName="date_uploaded" />
+      </div>
+
+      <div>
+        <label for="category">Category</label>
+        <select id="category" formControlName="category">
+          @for (category of videoCategories; track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label for="link">Video link</label>
+        <input id="link" type="url" formControlName="link" />
+        @if (form.controls.link.touched && form.controls.link.invalid) {
+          <p>Enter a valid HTTP or HTTPS link (up to 100 characters).</p>
+        }
+      </div>
+
+      <button type="submit" [disabled]="form.invalid || saving()">
+        {{ saving() ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </form>
   }
 </section>

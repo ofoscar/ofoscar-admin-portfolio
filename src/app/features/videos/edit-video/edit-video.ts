@@ -1,25 +1,41 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { VideosService } from '../../../core/services/videos';
-import { Video } from '../video.model';
+import { Video, VideoCategory, VideoType } from '../video.model';
 
 @Component({
   selector: 'app-edit-video',
-  imports: [RouterLink, DatePipe],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './edit-video.html',
   styleUrl: './edit-video.scss',
 })
 export class EditVideo {
+  private fb = inject(FormBuilder).nonNullable;
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private videosService = inject(VideosService);
 
+  readonly videoTypes = Object.values(VideoType);
+  readonly videoCategories = Object.values(VideoCategory);
   videoId = Number(this.route.snapshot.paramMap.get('id'));
-  video = signal<Video | null>(null);
   loading = signal(true);
+  saving = signal(false);
   error = signal<string | null>(null);
+
+  form = this.fb.group({
+    title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
+    slug: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(300)]],
+    type: [VideoType.SHORT_FORM, Validators.required],
+    date_uploaded: ['', Validators.required],
+    category: [VideoCategory.SOFTWARE_DEVELOPMENT, Validators.required],
+    link: [
+      '',
+      [Validators.required, Validators.maxLength(100), Validators.pattern(/^https?:\/\/.+/)],
+    ],
+  });
 
   constructor() {
     if (!Number.isSafeInteger(this.videoId) || this.videoId <= 0) {
@@ -39,10 +55,50 @@ export class EditVideo {
       .getVideo(this.videoId)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (video) => this.video.set(video),
+        next: (video) => this.form.patchValue(this.videoToFormValue(video)),
         error: (err: HttpErrorResponse) => {
           this.error.set(err.status === 404 ? 'Video not found.' : 'Failed to load video.');
         },
       });
+  }
+
+  saveVideo(): void {
+    if (this.form.invalid || this.saving()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const values = this.form.getRawValue();
+    this.saving.set(true);
+    this.error.set(null);
+
+    this.videosService
+      .updateVideo(this.videoId, {
+        ...values,
+        date_uploaded: new Date(values.date_uploaded).toISOString(),
+      })
+      .pipe(finalize(() => this.saving.set(false)))
+      .subscribe({
+        next: () => this.router.navigate(['/admin/videos']),
+        error: (err: HttpErrorResponse) => {
+          this.error.set(err.status === 401 ? 'Authentication required.' : 'Failed to update video.');
+        },
+      });
+  }
+
+  private videoToFormValue(video: Video) {
+    return {
+      title: video.title,
+      slug: video.slug,
+      type: video.type,
+      date_uploaded: this.toLocalDateTimeValue(new Date(video.date_uploaded)),
+      category: video.category,
+      link: video.link,
+    };
+  }
+
+  private toLocalDateTimeValue(date: Date): string {
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+    return local.toISOString().slice(0, 16);
   }
 }
