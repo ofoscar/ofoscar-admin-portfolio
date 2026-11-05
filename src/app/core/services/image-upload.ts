@@ -15,11 +15,15 @@ export class ImageUploadService {
 
   private apiUrl = environment.apiUrl;
 
-  uploadImage(file: File): Observable<ImageUploadResponse> {
+  uploadImage(
+    file: File,
+    destination: 'projects' | 'videos' = 'projects',
+  ): Observable<ImageUploadResponse> {
     const formData = new FormData();
 
     formData.append('file', file, file.name);
 
-    return this.http.post<ImageUploadResponse>(`${this.apiUrl}/uploads/images`, formData);
+    const endpoint = destination === 'videos' ? 'video-images' : 'images';
+    return this.http.post<ImageUploadResponse>(`${this.apiUrl}/uploads/${endpoint}`, formData);
   }
 }

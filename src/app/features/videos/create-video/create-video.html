@@ -57,6 +57,7 @@
       <label for="thumbnail">Thumbnail</label>
       <app-image-uploader
         label="Select Thumbnail"
+        destination="videos"
         [disabled]="saving()"
         (imageUploaded)="onThumbnailUploaded($event)"
         (uploadingChange)="thumbnailUploading.set($event)"
