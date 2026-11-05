@@ -4,11 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { VideosService } from '../../../core/services/videos';
+import { ImageUploader } from '../../../shared/image-uploader/image-uploader';
 import { VideoCategory, VideoCreate, VideoType } from '../video.model';
 
 @Component({
   selector: 'app-create-video',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ImageUploader],
   templateUrl: './create-video.html',
   styleUrl: './create-video.scss',
 })
@@ -20,6 +21,7 @@ export class CreateVideo {
   readonly videoTypes = Object.values(VideoType);
   readonly videoCategories = Object.values(VideoCategory);
   saving = signal(false);
+  thumbnailUploading = signal(false);
   error = signal<string | null>(null);
 
   form = this.fb.group({
@@ -29,10 +31,15 @@ export class CreateVideo {
     date_uploaded: [this.toLocalDateTimeValue(new Date()), Validators.required],
     category: [VideoCategory.SOFTWARE_DEVELOPMENT, Validators.required],
     link: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^https?:\/\/.+/)]],
+    thumbnail_url: [''],
   });
 
+  onThumbnailUploaded(url: string): void {
+    this.form.controls.thumbnail_url.setValue(url);
+  }
+
   onSubmit(): void {
-    if (this.form.invalid || this.saving()) {
+    if (this.form.invalid || this.saving() || this.thumbnailUploading()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -41,6 +48,7 @@ export class CreateVideo {
     const video: VideoCreate = {
       ...values,
       date_uploaded: new Date(values.date_uploaded).toISOString(),
+      thumbnail_url: values.thumbnail_url || null,
     };
 
     this.saving.set(true);

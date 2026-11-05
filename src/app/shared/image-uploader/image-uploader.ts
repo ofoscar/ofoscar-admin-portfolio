@@ -14,6 +14,7 @@ export class ImageUploader {
 
   label = input('Upload image');
   disabled = input(false);
+  destination = input<'projects' | 'videos'>('projects');
 
   imageUploaded = output<string>();
   uploadingChange = output<boolean>();
@@ -48,7 +49,7 @@ export class ImageUploader {
     this.error.set(null);
 
     this.imageUploadService
-      .uploadImage(file)
+      .uploadImage(file, this.destination())
       .pipe(
         finalize(() => {
           this.uploading.set(false);

@@ -15,6 +15,7 @@ export interface Video {
   date_uploaded: Date;
   category: VideoCategory;
   link: string;
+  thumbnail_url?: string | null;
 }
 
 export type VideoCreate = Omit<Video, 'id' | 'date_uploaded'> & { date_uploaded: string };

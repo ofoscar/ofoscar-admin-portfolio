@@ -53,7 +53,22 @@
       }
     </div>
 
-    <button type="submit" [disabled]="form.invalid || saving()">
+    <div>
+      <label for="thumbnail">Thumbnail</label>
+      <app-image-uploader
+        label="Select Thumbnail"
+        destination="videos"
+        [disabled]="saving()"
+        (imageUploaded)="onThumbnailUploaded($event)"
+        (uploadingChange)="thumbnailUploading.set($event)"
+      />
+
+      @if (form.controls.thumbnail_url.value; as url) {
+        <img [src]="url" alt="Video thumbnail preview" width="300" />
+      }
+    </div>
+
+    <button type="submit" [disabled]="form.invalid || saving() || thumbnailUploading()">
       {{ saving() ? 'Creating...' : 'Create Video' }}
     </button>
   </form>
