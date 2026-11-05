@@ -62,6 +62,7 @@ describe('EditVideo', () => {
       date_uploaded: jasmine.any(String),
       category: video.category,
       link: video.link,
+      thumbnail_url: '',
     });
     expect(component.loading()).toBeFalse();
   });
